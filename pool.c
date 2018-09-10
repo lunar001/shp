@@ -41,11 +41,11 @@ int _DestroySimplePool(struct _SimplePool * shp)
 
 }
 
-int __AllocateSegment(struct _SimplePool * shp)
+struct _SimplePoolSegment *  __AllocateSegment(struct _SimplePool * shp)
 {
 
-	/* first allocate a segment for simple pool, and insert 
-	 * it into shp                                        */
+	/* allocate a segment for simple pool, and insert 
+	 * it into shp                                   */
 
 	/* the size of a segment including the header length of*
 	 * segment and the cells part in this segment          */
@@ -57,9 +57,9 @@ int __AllocateSegment(struct _SimplePool * shp)
 	
 	if(segp == NULL)
 	{
-		return -1;/* allocate segment memory error;*/
+		return NULL;/* allocate segment memory error;*/
 	}
-	memseg(segp, 0, segSize);
+	memset(segp, 0, segSize);
 
 	/* init the newly allocated segment */
 	segp->avinum_ = SHPCELLNUM;
@@ -90,9 +90,77 @@ int __AllocateSegment(struct _SimplePool * shp)
 		shp->avitail_ = segp;
 	shp->avihead_ = segp;
 
+	return segp;
+}
+
+/* Delete a segment segp from the shp*/
+int __DeleteSegment(struct _SimplePool * shp, struct _SimplePoolSegment * segp)
+{
+	/* first delete the segment from the seglist and avi segment list, and then*
+	 * free the segment memory */
+
+	/* delete segp from the avi segment list */
+	if(segp->avinext_ != NULL)
+		segp->avinext_->aviprev_ = segp->aviprev_;
+	else
+		shp->avitail_ = segp->aviprev_;
+	if(segp->aviprev_ != NULL)
+		segp->aviprev_->avinext_ = segp->avinext_;
+	else
+		shp->avihead_ = segp->avinext_;
+
+
+	/* delete the segment from the seglist */
+	if(segp->segnext_ != NULL)
+		segp->segnext_->segprev_ = segp->segprev_;
+	else
+		shp->segtail_ = segp->segprev_;
+	if(segp->segprev_ != NULL)
+		segp->segprev_->segnext_ = = segp->segnext_;
+	else
+		shp->seghead_ = segp->segnext_;
+
+
+	/* free the segment memory*/
+
+	free(segp);
 	return 0;
 }
 
+
+void * GetCellFromSHP(struct _SimplePool * shp)
+{
+	/* get a shp cell from shp */
+	int ret = pthread_mutex_lock(&shp->lock_);
+	void * cellp = NULL;
+	void * retp = NULL;
+	struct _SimplePoolSegment * segp = NULL;
+	if(ret)
+	{
+		printf("pthread_mutex_lock error %s\n", strerror(errno));
+		return retp;
+	}
+
+	/*First get a avialiable segment from segment list */
+	If(shp->avihead_ == NULL)
+	{
+		/* there is no aviliable segment in this shp, allocate a new one*/
+		segp = __AllocateSegment(shp);
+		if(segp == NULL)
+		{
+			/* allocate segment failed, return NULL to application */
+			printf("There is no enough memory to use\n");
+			return NULL;
+		}
+	}
+	else
+		segp = shp->avihead_;
+	
+	// search a free cell from segp->segavicursor_ */
+
+
+
+}
 
 
 
