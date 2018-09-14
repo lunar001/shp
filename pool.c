@@ -19,6 +19,9 @@ struct  _SimplePool * CreateSimplePoll(size_t cellsize, size_t segsize)
 		free(shp);
 		return NULL;
 	}
+	/* the cell size should include the length of the seg
+	 * pointer in the front of the cell */
+	shp->segsize_ = cellsize + sizeof(void *);
 
 	return shp;
 }
@@ -156,13 +159,69 @@ void * GetCellFromSHP(struct _SimplePool * shp)
 	else
 		segp = shp->avihead_;
 	
-	// search a free cell from segp->segavicursor_ */
+	/* search a free cell from segp->segavicursor_ */
+	cellp = segp->segavicursor_;
+	while(cellp->segptr_ && cellp < segp->segaviend_)
+		cellp = cellp +  shp->segsize_;
+	
+	if(cellp == segp->segaviend_)/* error this impossible */
+		return NULL;
+	else
+		retp = cellp + sizeof(struct _SimplePool);
+	/* update this segment*/
+	segp->avinum_ = segp->avinum_ - 1;
+	if (segp->avinum_ == 0)
+	{
+		/* there is no avialiable cell in this segment, 
+		 * delete this segment from the aviliable list*/
+		if(segp->aviprev_ != NULL)
+			segp->aviprev_->avinext_ = segp->avinext_;
+		else
+			shp->avihead_ = segp->avinext_;
+		if(segp->avinext_ != NULL)
+			segp->avinext_->aviprev_ = segp->aviprev_;
+		else
+			shp->avitail_ = segp->aviprev_;
+		/* the segp segment will be insert back to this list, so clear
+		 * previous and next pointer */
+		segp->avinext_ = segp->aviprev_ = 0;
 
-
-
+	}
+	else
+		segp->segavicursor_ = cellp;
+	
+	return retp;
 }
 
+void FreeCellToSHP(struct _SimplePool * shp, void * retp)
+{
+	/* get the address of the cell */
+	void * cellp = retp - sizeof(struct _SimplePoolCell);
+	struct  _SimplePoolSegment * segp = cellp->segptr_;
 
+	/*indicate this cell as avaliable*/
+	cellp->segptr_ = 0;
+
+	segp->segavicursor_ = cellp;
+
+	if(segp->avinum_ == 0)
+	{
+		/* the free makes the segment be the aviliable one
+		 * so insert it back to shp avi list from the tail*/
+		segp->aviprev_ = shp->tail;
+		if(shp->avitail_ != NULL)
+			shp->avitail_->avinext_ = segp;
+		else
+			shp->avihead_ = segp;
+		shp->avitail_ = segp;
+
+	}
+	segp->avinum_ = segp->avinum_ + 1;
+
+	 if(segp->avinum_ == SHPCELLNUM)
+		/*If there is no available delete free this segment */
+		__DeleteSegment(shp, segp);
+}
 
 
 
