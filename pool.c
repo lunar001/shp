@@ -1,8 +1,8 @@
 #include "pool.h"
 
-struct  _SimplePool * CreateSimplePoll(size_t cellsize, size_t segsize)
+struct  _SimplePool * CreateSimplePool(size_t cellsize, size_t segsize)
 {
-	size_t seglength = cellsize * segsize;
+	size_t seglength =sizeof(struct _SimplePool);
 
 	int ret = 0;
 	struct _SimplePool * shp = (struct _SimplePool *)malloc(seglength);
@@ -22,11 +22,12 @@ struct  _SimplePool * CreateSimplePoll(size_t cellsize, size_t segsize)
 	/* the cell size should include the length of the seg
 	 * pointer in the front of the cell */
 	shp->segsize_ = cellsize + sizeof(void *);
+	shp->cellsize_ = segsize;
 
 	return shp;
 }
 
-int _DestroySimplePool(struct _SimplePool * shp)
+int DestroySimplePool(struct _SimplePool * shp)
 {
 	int ret = 0;
 	if(shp)
@@ -163,12 +164,15 @@ void * GetCellFromSHP(struct _SimplePool * shp)
 	cellp = segp->segavicursor_;
 	while(((struct _SimplePoolCell *)cellp)->segptr_ != NULL && 
 	      cellp < segp->segaviend_)
-		cellp = cellp +  shp->segsize_;
+		cellp = cellp +  shp->cellsize_;
 	
 	if(cellp == segp->segaviend_)/* error this impossible */
 		return NULL;
 	else
-		retp = cellp + sizeof(struct _SimplePool);
+	{
+		retp = cellp + sizeof(void *);
+		((struct _SimplePoolCell*)cellp)->segptr_ = segp;
+	}
 	/* update this segment*/
 	segp->avinum_ = segp->avinum_ - 1;
 	if (segp->avinum_ == 0)
@@ -189,7 +193,7 @@ void * GetCellFromSHP(struct _SimplePool * shp)
 
 	}
 	else
-		segp->segavicursor_ = cellp;
+		segp->segavicursor_ = cellp + shp->cellsize_;
 	
 	return retp;
 }

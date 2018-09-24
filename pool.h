@@ -43,7 +43,7 @@ struct _SimplePoolCell
 
 
 struct _SimplePool * CreateSimplePool(size_t cellsize, size_t segsize);
-int _DestroySimplePool(struct _SimplePool * shp);
-void * _GetOneCellFromShp(struct _SimplePool * shp);
-void * _FreeOneCellToShp(struct _SimplePool * shp);
+int DestroySimplePool(struct _SimplePool * shp);
+void * GetCellFromSHP(struct _SimplePool * shp);
+void   FreeCellToSHP(struct _SimplePool * shp, void * p);
  
