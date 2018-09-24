@@ -1,6 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <pthread.h>
+#include <error.h>
+#include <errno.h>
+#include <string.h>
 
 
 
@@ -13,19 +16,19 @@ struct _SimplePool
 	pthread_mutex_t  lock_;
 	size_t cellsize_;
 	size_t segsize_; // indicate how many cell in a segment of simple pool
-	void * seghead_;
-	void * segtail_;
-	void * avihead_;
-	void * avitail_;
+	struct _SimplePoolSegment * seghead_;
+	struct _SimplePoolSegment * segtail_;
+	struct _SimplePoolSegment * avihead_;
+	struct _SimplePoolSegment * avitail_;
 };
 
 
 struct _SimplePoolSegment 
 {
-	void * segnext_;
-	void * segprev_;
-	void * avinext_;
-	void * aviprev_;
+	struct _SimplePoolSegment * segnext_;
+	struct _SimplePoolSegment * segprev_;
+	struct _SimplePoolSegment * avinext_;
+	struct _SimplePoolSegment * aviprev_;
 	size_t avinum_;
 	void * segavicursor_;
 	void * segavibegin_;
@@ -35,7 +38,7 @@ struct _SimplePoolSegment
 
 struct _SimplePoolCell
 {
-	void * segptr_;
+	struct _SimplePoolSegment * segptr_;
 };
 
 

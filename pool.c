@@ -2,15 +2,15 @@
 
 struct  _SimplePool * CreateSimplePoll(size_t cellsize, size_t segsize)
 {
-	size_t segsize = cellsize * segsize;
+	size_t seglength = cellsize * segsize;
 
 	int ret = 0;
-	struct _SimplePool * shp = (struct _SimplePool *)malloc(segsize);
+	struct _SimplePool * shp = (struct _SimplePool *)malloc(seglength);
 
 	if(shp == NULL)
 		return NULL;
 
-	memset(shp, 0, segsize);
+	memset(shp, 0, seglength);
 	
 	ret = pthread_mutex_init(&(shp->lock_), NULL);
 	if(ret)
@@ -119,7 +119,7 @@ int __DeleteSegment(struct _SimplePool * shp, struct _SimplePoolSegment * segp)
 	else
 		shp->segtail_ = segp->segprev_;
 	if(segp->segprev_ != NULL)
-		segp->segprev_->segnext_ = = segp->segnext_;
+		segp->segprev_->segnext_ = segp->segnext_;
 	else
 		shp->seghead_ = segp->segnext_;
 
@@ -145,7 +145,7 @@ void * GetCellFromSHP(struct _SimplePool * shp)
 	}
 
 	/*First get a avialiable segment from segment list */
-	If(shp->avihead_ == NULL)
+	if(shp->avihead_ == NULL)
 	{
 		/* there is no aviliable segment in this shp, allocate a new one*/
 		segp = __AllocateSegment(shp);
@@ -161,7 +161,8 @@ void * GetCellFromSHP(struct _SimplePool * shp)
 	
 	/* search a free cell from segp->segavicursor_ */
 	cellp = segp->segavicursor_;
-	while(cellp->segptr_ && cellp < segp->segaviend_)
+	while(((struct _SimplePoolCell *)cellp)->segptr_ != NULL && 
+	      cellp < segp->segaviend_)
 		cellp = cellp +  shp->segsize_;
 	
 	if(cellp == segp->segaviend_)/* error this impossible */
@@ -196,11 +197,11 @@ void * GetCellFromSHP(struct _SimplePool * shp)
 void FreeCellToSHP(struct _SimplePool * shp, void * retp)
 {
 	/* get the address of the cell */
-	void * cellp = retp - sizeof(struct _SimplePoolCell);
-	struct  _SimplePoolSegment * segp = cellp->segptr_;
+	struct _SimplePoolCell * cellp = (struct _SimplePoolCell *)(retp - sizeof(struct _SimplePoolCell));
+	struct  _SimplePoolSegment * segp = ((struct _SimplePoolCell*)cellp)->segptr_;
 
 	/*indicate this cell as avaliable*/
-	cellp->segptr_ = 0;
+	cellp->segptr_ = NULL;
 
 	segp->segavicursor_ = cellp;
 
@@ -208,7 +209,7 @@ void FreeCellToSHP(struct _SimplePool * shp, void * retp)
 	{
 		/* the free makes the segment be the aviliable one
 		 * so insert it back to shp avi list from the tail*/
-		segp->aviprev_ = shp->tail;
+		segp->aviprev_ = shp->avitail_;
 		if(shp->avitail_ != NULL)
 			shp->avitail_->avinext_ = segp;
 		else
