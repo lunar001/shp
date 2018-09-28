@@ -21,8 +21,8 @@ struct  _SimplePool * CreateSimplePool(size_t cellsize, size_t segsize)
 	}
 	/* the cell size should include the length of the seg
 	 * pointer in the front of the cell */
-	shp->segsize_ = cellsize + sizeof(void *);
-	shp->cellsize_ = segsize;
+	shp->cellsize_ = cellsize + sizeof(void *);
+	shp->segsize_ = segsize ? SHPCELLNUM : segsize;
 
 	return shp;
 }
@@ -131,7 +131,6 @@ int __DeleteSegment(struct _SimplePool * shp, struct _SimplePoolSegment * segp)
 	return 0;
 }
 
-
 void * GetCellFromSHP(struct _SimplePool * shp)
 {
 	/* get a shp cell from shp */
@@ -227,9 +226,4 @@ void FreeCellToSHP(struct _SimplePool * shp, void * retp)
 		/*If there is no available delete free this segment */
 		__DeleteSegment(shp, segp);
 }
-
-
-
-
-
 

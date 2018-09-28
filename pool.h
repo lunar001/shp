@@ -15,7 +15,9 @@ struct _SimplePool
 {
 	pthread_mutex_t  lock_;
 	size_t cellsize_;
-	size_t segsize_; // indicate how many cell in a segment of simple pool
+
+	// indicate how many cell in a segment of simple pool, default it will equals SHPCELLNUM
+	size_t segsize_; 
 	struct _SimplePoolSegment * seghead_;
 	struct _SimplePoolSegment * segtail_;
 	struct _SimplePoolSegment * avihead_;
