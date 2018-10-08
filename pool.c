@@ -22,7 +22,7 @@ struct  _SimplePool * CreateSimplePool(size_t cellsize, size_t segsize)
 	/* the cell size should include the length of the seg
 	 * pointer in the front of the cell */
 	shp->cellsize_ = cellsize + sizeof(void *);
-	shp->segsize_ = segsize ? SHPCELLNUM : segsize;
+	shp->segsize_ = segsize ? segsize : SHPCELLNUM;
 
 	return shp;
 }
