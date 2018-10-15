@@ -1,4 +1,5 @@
 #include "pool.h"
+#include "print.h"
 
 struct  _SimplePool * CreateSimplePool(size_t cellsize, size_t segsize)
 {
@@ -15,7 +16,7 @@ struct  _SimplePool * CreateSimplePool(size_t cellsize, size_t segsize)
 	ret = pthread_mutex_init(&(shp->lock_), NULL);
 	if(ret)
 	{
-		printf("Pthread_mutex_init error\n");
+		log_error("pthread_mutex_init error\n");	
 		free(shp);
 		return NULL;
 	}
@@ -93,7 +94,7 @@ struct _SimplePoolSegment *  __AllocateSegment(struct _SimplePool * shp)
 		/* There is no segment in the avi list, update tail*/
 		shp->avitail_ = segp;
 	shp->avihead_ = segp;
-
+	log_debug("a segment allocated\n");
 	return segp;
 }
 
@@ -128,6 +129,7 @@ int __DeleteSegment(struct _SimplePool * shp, struct _SimplePoolSegment * segp)
 	/* free the segment memory*/
 
 	free(segp);
+	log_debug("a segment freed\n");
 	return 0;
 }
 
