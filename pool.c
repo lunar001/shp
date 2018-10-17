@@ -1,6 +1,9 @@
 #include "pool.h"
 #include "print.h"
 
+void rbtree_insert(struct rb_root * rbtoot, struct _SimplePoolSegment * segp);
+void rbtree_erase(struct rb_root * rbtoot, struct _SimplePoolSegment * segp);
+void __rbtree_trav(struct rb_node * node);
 struct  _SimplePool * CreateSimplePool(size_t cellsize, size_t segsize)
 {
 	size_t seglength =sizeof(struct _SimplePool);
@@ -24,6 +27,8 @@ struct  _SimplePool * CreateSimplePool(size_t cellsize, size_t segsize)
 	 * pointer in the front of the cell */
 	shp->cellsize_ = cellsize + sizeof(void *);
 	shp->segsize_ = segsize ? segsize : SHPCELLNUM;
+	/* rbroot_ in shp is clear to zero, so don't need to */
+	/* init it explicitly                                */
 
 	return shp;
 }
@@ -68,22 +73,18 @@ struct _SimplePoolSegment *  __AllocateSegment(struct _SimplePool * shp)
 
 	/* init the newly allocated segment */
 	segp->avinum_ = SHPCELLNUM;
+
+	/* use the segp to init key_*/
+
+	segp->key_ = (unsigned long)segp;
+
 	segp->segavibegin_ = (char *)segp + sizeof(struct _SimplePoolSegment);
 	segp->segaviend_ = (char *)segp->segavibegin_ + SHPCELLNUM * shp->cellsize_;
 	/* segavicursor_ points the first cell in this segment initialily*/
 	segp->segavicursor_ = segp->segavibegin_;
 
-	
-	/* insert this newly allocated segment into the segment *
-	 * list of simple pool. Insert it from the head*/
-	segp->segnext_ = shp->seghead_;
-	if(shp->seghead_ != NULL)
-		shp->seghead_->segprev_ = segp;
-	else
-		/* There is no segment in this list, so update tail*/
-		shp->segtail_ = segp;
-	shp->seghead_ = segp;
-
+	rbtree_insert(&shp->rbroot_, segp);	
+    	
 	/* insert this newly allocated segment into the avialiable
 	 * segment list of simple pool. Insert it from the head as
 	 * well.*/
@@ -95,6 +96,7 @@ struct _SimplePoolSegment *  __AllocateSegment(struct _SimplePool * shp)
 		shp->avitail_ = segp;
 	shp->avihead_ = segp;
 	log_debug("a segment allocated\n");
+	__rbtree_trav((shp->rbroot_).rb_node);
 	return segp;
 }
 
@@ -115,16 +117,7 @@ int __DeleteSegment(struct _SimplePool * shp, struct _SimplePoolSegment * segp)
 		shp->avihead_ = segp->avinext_;
 
 
-	/* delete the segment from the seglist */
-	if(segp->segnext_ != NULL)
-		segp->segnext_->segprev_ = segp->segprev_;
-	else
-		shp->segtail_ = segp->segprev_;
-	if(segp->segprev_ != NULL)
-		segp->segprev_->segnext_ = segp->segnext_;
-	else
-		shp->seghead_ = segp->segnext_;
-
+	rbtree_erase(&shp->rbroot_, segp);
 
 	/* free the segment memory*/
 

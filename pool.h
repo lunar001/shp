@@ -1,3 +1,5 @@
+#ifndef POOL_HEADER
+#define POOL_HEADER
 #include <stdio.h>
 #include <stdlib.h>
 #include <pthread.h>
@@ -5,6 +7,7 @@
 #include <errno.h>
 #include <string.h>
 
+#include "rbtree.h"
 
 
 #define SHPCELLNUM   64
@@ -14,12 +17,14 @@
 struct _SimplePool
 {
 	pthread_mutex_t  lock_;
-	size_t cellsize_;
+	size_t cellsize_; // the size of each cell in this pool 
 
 	// indicate how many cell in a segment of simple pool, default it will equals SHPCELLNUM
 	size_t segsize_; 
-	struct _SimplePoolSegment * seghead_;
-	struct _SimplePoolSegment * segtail_;
+	/*use rb_tree to organize the segment list */
+	struct rb_root rbroot_;	
+	/*struct _SimplePoolSegment * seghead_;
+	struct _SimplePoolSegment * segtail_;*/
 	struct _SimplePoolSegment * avihead_;
 	struct _SimplePoolSegment * avitail_;
 };
@@ -27,8 +32,12 @@ struct _SimplePool
 
 struct _SimplePoolSegment 
 {
-	struct _SimplePoolSegment * segnext_;
+	/*struct _SimplePoolSegment * segnext_;
 	struct _SimplePoolSegment * segprev_;
+	*/
+	/* use the address of segment as the key of rb_tree*/
+	unsigned long key_;
+	struct rb_node rbnode_;
 	struct _SimplePoolSegment * avinext_;
 	struct _SimplePoolSegment * aviprev_;
 	size_t avinum_;
@@ -48,4 +57,4 @@ struct _SimplePool * CreateSimplePool(size_t cellsize, size_t segsize);
 int DestroySimplePool(struct _SimplePool * shp);
 void * GetCellFromSHP(struct _SimplePool * shp);
 void   FreeCellToSHP(struct _SimplePool * shp, void * p);
- 
+#endif 
