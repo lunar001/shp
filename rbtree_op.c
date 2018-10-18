@@ -24,7 +24,7 @@ void rbtree_insert(struct rb_root * rbroot, struct _SimplePoolSegment * segp )
 
 void rbtree_erase(struct rb_root * rbroot, struct _SimplePoolSegment * segp)
 {
-	struct rb_node * tr = rbroot->rb_node;
+	/*struct rb_node * tr = rbroot->rb_node;
 	struct _SimplePoolSegment * tmp = NULL;
 	while(tr)
 	{
@@ -37,7 +37,12 @@ void rbtree_erase(struct rb_root * rbroot, struct _SimplePoolSegment * segp)
 			tr = tr->rb_right;
 	}
 	if(tr)
-		rb_erase(tr, rbroot);
+		rb_erase(tr, rbroot);*/
+	
+	/* as we already get the wanted deleted node segp->rb_node_, so directly  */
+	/* call rb_erase() to delete it from rb_tree                              */
+	rb_erase(rbroot, &segp->rbnode_);
+	return;
 }
 
 void __rbtree_trav(struct rb_node * node)
