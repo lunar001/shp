@@ -123,6 +123,7 @@ int __DeleteSegment(struct _SimplePool * shp, struct _SimplePoolSegment * segp)
 
 	free(segp);
 	log_debug("a segment freed\n");
+	__rbtree_trav((shp->rbroot_).rb_node);
 	return 0;
 }
 
