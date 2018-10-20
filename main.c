@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include "pool.h"
-#define NUM 1024
+#include "print.h"
+#define NUM 64
 int main(int argc, char ** argv)
 {
 	struct _SimplePool * shp = NULL;
@@ -37,11 +38,19 @@ int main(int argc, char ** argv)
 		memset(p, 0, 64);
 		pp[i] = p;
 	}
+	unsigned long begin;
+	unsigned long end;
+	GetShpAddrScope(shp, &begin, &end);
 
+	log_info("begin = %lu end = %lu\n", begin, end);
 	for(i = 0; i < num; i++)
 	{
 		FreeCellToSHP(shp, pp[i]);
+
+
 	}
+	GetShpAddrScope(shp, &begin, &end);
+	log_info("begin = %lu end = %lu\n", begin, end);
 
 	DestroySimplePool(shp);
 	return 0;

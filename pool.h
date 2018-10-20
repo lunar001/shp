@@ -27,6 +27,14 @@ struct _SimplePool
 	struct _SimplePoolSegment * segtail_;*/
 	struct _SimplePoolSegment * avihead_;
 	struct _SimplePoolSegment * avitail_;
+	
+	/*shpbegin_ and shpend_ indicates the address scope of shp*/
+	/*when new segment alocated or deleted, try to update this two fields*/
+	unsigned long shpbegin_; 
+
+	/* shpend_ is not the truly end address of shp*/
+	/* it is the begin of the segment of smallest address  */
+	unsigned long shpend_; 
 };
 
 
@@ -54,7 +62,8 @@ struct _SimplePoolCell
 
 
 struct _SimplePool * CreateSimplePool(size_t cellsize, size_t segsize);
-int DestroySimplePool(struct _SimplePool * shp);
+int    DestroySimplePool(struct _SimplePool * shp);
 void * GetCellFromSHP(struct _SimplePool * shp);
 void   FreeCellToSHP(struct _SimplePool * shp, void * p);
+void   GetShpAddrScope(struct _SimplePool * shp, unsigned long* begin,  unsigned long * end);
 #endif 

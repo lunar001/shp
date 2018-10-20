@@ -30,6 +30,11 @@ struct  _SimplePool * CreateSimplePool(size_t cellsize, size_t segsize)
 	/* rbroot_ in shp is clear to zero, so don't need to */
 	/* init it explicitly                                */
 
+	/*initialize shp->shpbegin_ = 0, but initialize shp->shpend_ to a negtive value*/
+	/*to make sure the first segment allocating can update it                      */
+	shp->shpend_ = 0;
+	shp->shpbegin_ = 0xffffffffffffffff;
+
 	return shp;
 }
 
@@ -84,6 +89,15 @@ struct _SimplePoolSegment *  __AllocateSegment(struct _SimplePool * shp)
 	segp->segavicursor_ = segp->segavibegin_;
 
 	rbtree_insert(&shp->rbroot_, segp);	
+
+	/* if the new allocated segment is the edge of the address scope */
+	/* update shp->shpbegin_ or shp->shpend_                         */
+	if(segp->segavibegin_ < shp->shpbegin_)
+		/* segp has the highest address in all exist segments*/
+		shp->shpbegin_ = segp->segavibegin_;
+	else if(segp->segavibegin_ > shp->shpend_)
+		/* segp has the lowest address in all exist segments */
+		shp->shpend_ = segp->segavibegin_;
     	
 	/* insert this newly allocated segment into the avialiable
 	 * segment list of simple pool. Insert it from the head as
@@ -95,8 +109,11 @@ struct _SimplePoolSegment *  __AllocateSegment(struct _SimplePool * shp)
 		/* There is no segment in the avi list, update tail*/
 		shp->avitail_ = segp;
 	shp->avihead_ = segp;
+
 	log_debug("a segment allocated\n");
+#ifdef Debug
 	__rbtree_trav((shp->rbroot_).rb_node);
+#endif
 	return segp;
 }
 
@@ -116,6 +133,9 @@ int __DeleteSegment(struct _SimplePool * shp, struct _SimplePoolSegment * segp)
 	else
 		shp->avihead_ = segp->avinext_;
 
+	/* update scop before delte the segment from rbtree*/
+
+	update_scope_for_delete(shp, segp);
 
 	rbtree_erase(&shp->rbroot_, segp);
 
@@ -123,7 +143,9 @@ int __DeleteSegment(struct _SimplePool * shp, struct _SimplePoolSegment * segp)
 
 	free(segp);
 	log_debug("a segment freed\n");
+#ifdef Debug
 	__rbtree_trav((shp->rbroot_).rb_node);
+#endif
 	return 0;
 }
 
@@ -221,5 +243,42 @@ void FreeCellToSHP(struct _SimplePool * shp, void * retp)
 	 if(segp->avinum_ == SHPCELLNUM)
 		/*If there is no available delete free this segment */
 		__DeleteSegment(shp, segp);
+}
+
+void GetShpAddrScope(struct _SimplePool * shp, unsigned long * begin, unsigned long * end)
+{
+	*begin =  shp->shpbegin_;
+	*end = shp->shpend_;
+	return ;
+}
+
+void update_scope_for_delete(struct _SimplePool * shp, struct _SimplePoolSegment * segp)
+{
+	
+	if(shp->shpbegin_ == segp->segavibegin_)
+	{
+		struct _SimplePoolSegment * segpt = rbtree_find_next(shp->rbroot_, segp);
+		if(segpt == NULL)
+		{
+			shp->shpbegin_ = 0xffffffffffffffff;
+			shp->shpend_ = 0;
+		}
+		else
+			shp->shpbegin_ = segpt->segavibegin_;
+		
+	}
+	else if(shp->shpend_ == segp->segavibegin_)
+	{
+		struct _SimplePoolSegment * segpt = rbtree_find_prev(shp->rbroot_, segp);
+
+		if(segpt == NULL)
+		{
+			shp->shpbegin_ = 0xffffffffffffffff;
+			shp->shpend_ = 0;
+		}
+		else
+			shp->shpend_ = segpt->segavibegin_;
+	}
+	return ;
 }
 

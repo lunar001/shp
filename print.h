@@ -12,7 +12,7 @@
 	fprintf(stdout, fmt, ##__VA_ARGS__);\
 	fprintf(stdout, COLOR_NONE);
 
-#ifdef D
+#ifdef Debug
 
 #define log_debug(fmt, ...) \
 	fprintf(stdout, COLOR_BLUE);\

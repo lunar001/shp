@@ -45,6 +45,24 @@ void rbtree_erase(struct rb_root * rbroot, struct _SimplePoolSegment * segp)
 	return;
 }
 
+struct _SimplePoolSegment * rbtree_find_next(struct rb_root * rbroot, struct _SimplePoolSegment * current)
+{
+	struct rb_node * ret = rb_next(&current->rbnode_);
+	if(ret == NULL)
+		return NULL;
+	struct _SimplePoolSegment * retsegp = rb_entry(ret, struct _SimplePoolSegment, rbnode_);
+	return retsegp;
+}
+
+struct _SimplePoolSegment * rbtree_find_prev(struct rb_root * rbroot, struct _SimplePoolSegment * current)
+{
+	struct rb_node * ret = rb_prev(&current->rbnode_);
+	if(ret == NULL)
+		return NULL;
+	struct _SimplePoolSegment * retsegp = rb_entry(ret, struct _SimplePoolSegment, rbnode_);
+	return retsegp;
+}
+
 void __rbtree_trav(struct rb_node * node)
 {
 	if(node == NULL)
