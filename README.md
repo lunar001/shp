@@ -17,7 +17,7 @@ The structure of this simple heap pool is bellow:
 	|   avitail_   |   | aviprev_  |<--|--aviprev_ |<--|   ...     |<--|--aviprev_ |
 	+--------------+   +-----------+   +-----------+   |           |   +-----------+
 	                   |    ...    |   |    ...    |   |           |   |    ...    |
-					   +-----------+   +-----------+   +-----------+   +-----------+
+			  		   +-----------+   +-----------+   +-----------+   +-----------+
 
 usage:
     The simple heap pool supports for multi-thread.
