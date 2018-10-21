@@ -32,8 +32,8 @@ struct  _SimplePool * CreateSimplePool(size_t cellsize, size_t segsize)
 
 	/*initialize shp->shpbegin_ = 0, but initialize shp->shpend_ to a negtive value*/
 	/*to make sure the first segment allocating can update it                      */
-	shp->shpend_ = 0;
-	shp->shpbegin_ = 0xffffffffffffffff;
+	shp->shpend_ = SHPADDREND;
+	shp->shpbegin_ = SHPADDRBEGIN;
 
 	return shp;
 }
@@ -260,8 +260,8 @@ void update_scope_for_delete(struct _SimplePool * shp, struct _SimplePoolSegment
 		struct _SimplePoolSegment * segpt = rbtree_find_next(shp->rbroot_, segp);
 		if(segpt == NULL)
 		{
-			shp->shpbegin_ = 0xffffffffffffffff;
-			shp->shpend_ = 0;
+			shp->shpbegin_ = SHPADDRBEGIN;
+			shp->shpend_ = SHPADDREND;
 		}
 		else
 			shp->shpbegin_ = segpt->segavibegin_;
@@ -273,8 +273,8 @@ void update_scope_for_delete(struct _SimplePool * shp, struct _SimplePoolSegment
 
 		if(segpt == NULL)
 		{
-			shp->shpbegin_ = 0xffffffffffffffff;
-			shp->shpend_ = 0;
+			shp->shpbegin_ = SHPADDRBEGIN;
+			shp->shpend_ = SHPADDREND;
 		}
 		else
 			shp->shpend_ = segpt->segavibegin_;

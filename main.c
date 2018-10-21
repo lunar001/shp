@@ -26,7 +26,7 @@ int main(int argc, char ** argv)
 	printf(" num = %d\n", num);
 	pp = (void **) malloc(sizeof(void * ) * num);
 	memset(pp, 0, sizeof(void * ) * num);
-	for (i = 0; i < num; i++)
+	for (i = num - 1; i >= 0; i--)
 	{
 		void * p = NULL;
 		p = GetCellFromSHP(shp);

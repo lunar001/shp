@@ -11,6 +11,9 @@
 
 
 #define SHPCELLNUM   64
+#define SHPADDRBEGIN 0x7FFFFFFFFFFFFFFF
+#define SHPADDREND   0
+
 
 /* Structure _pool is the struct of my simple pool */
 
