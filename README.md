@@ -26,9 +26,15 @@ The structure of this simple heap pool is bellow:
 
 usage:
     The simple heap pool supports for multi-thread.
+    
 	Application need to create the pool before use and destory it after use
+	
 	Invoke CreateSimplePool() to create a simple heap pool, application should assign the cell size and how many cells in one segment
+	
 	Invoke GetCellFromSHP()  to allocate one cell from heap pool.
+	
 	Invoke FreeCellToSHP()   to free one cell to heap pool.
+	
 	Invoke GetShpAddrScope() to get the address scope of this shp pool.
+	
 	Invoke IsAddrInSHP() to test a address is in this scope or not.
