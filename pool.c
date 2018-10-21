@@ -95,7 +95,7 @@ struct _SimplePoolSegment *  __AllocateSegment(struct _SimplePool * shp)
 	if(segp->segavibegin_ < shp->shpbegin_)
 		/* segp has the highest address in all exist segments*/
 		shp->shpbegin_ = segp->segavibegin_;
-	else if(segp->segavibegin_ > shp->shpend_)
+	if(segp->segavibegin_ > shp->shpend_)
 		/* segp has the lowest address in all exist segments */
 		shp->shpend_ = segp->segavibegin_;
     	
