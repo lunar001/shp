@@ -134,8 +134,8 @@ int __DeleteSegment(struct _SimplePool * shp, struct _SimplePoolSegment * segp)
 		shp->avihead_ = segp->avinext_;
 
 	/* update scop before delte the segment from rbtree*/
-
-	update_scope_for_delete(shp, segp);
+	
+	__UpdateScopeForDelete(shp, segp);
 
 	rbtree_erase(&shp->rbroot_, segp);
 
@@ -252,7 +252,7 @@ void GetShpAddrScope(struct _SimplePool * shp, unsigned long * begin, unsigned l
 	return ;
 }
 
-void update_scope_for_delete(struct _SimplePool * shp, struct _SimplePoolSegment * segp)
+void __UpdateScopeForDelete(struct _SimplePool * shp, struct _SimplePoolSegment * segp)
 {
 	
 	if(shp->shpbegin_ == segp->segavibegin_)
@@ -282,3 +282,63 @@ void update_scope_for_delete(struct _SimplePool * shp, struct _SimplePoolSegment
 	return ;
 }
 
+/* external interface, test if addr in shp or not             */
+int IsAddrInShp(struct _SimplePool * shp, unsigned long * addr)
+{
+
+	int ret = 0;
+	ret = pthread_mutex_lock(&shp->lock_);
+	
+	if(ret)
+	{
+		log_error("pthrea_mutex_lock error\n");
+		exit(0);
+	}
+	
+	/*Note: shpend_ is the begining address of the segment with highest address, so the */
+	/*truly end address should plus a segment address scope                             */
+	if( addr < shp->shpbegin_ || addr > shp->shpend_ + shp->cellsize_ * shp->segsize_)
+	{
+		ret = pthread_mutex_unlock(&shp->lock_);
+		if(ret)
+		{
+			log_error("pthread_mutex_unlock error\n");
+			exit(1);
+		}
+		return 0;		
+	}
+	else
+		/*addr is in the scope of shpbegin_ and shpend_, must traverse segments to find*/
+		/*the segment including this addr */
+	{
+		int result = 0;
+		result =  __IsAddrInSHP(((shp->rbroot_).rb_node), addr);
+		ret = pthread_mutex_unlock(&shp->lock_);
+		if(ret)
+		{
+			log_error("pthread_mutex_unlock error\n");
+			exit(1);
+		}
+		return result;
+	}
+
+}
+
+
+int __IsAddrInSHP(struct rb_node * node, unsigned long addr)
+{
+	if(node == NULL)
+		return 0;
+	struct _SimplePoolSegment * tmp = rb_entry(node, struct _SimplePoolSegment, rbnode_);
+
+	if(addr >= tmp->segavibegin_ && addr <=tmp->segaviend_)
+		return 1;
+
+	if(tmp->segavibegin_ > addr)
+		/* search in left child */
+		return __IsAddrInSHP(node->rb_left, addr);
+
+	else if (tmp->segaviend_ < addr)
+		/* search in right child */
+		return  __IsAddrInSHP(node->rb_right, addr);
+}

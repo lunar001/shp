@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include "pool.h"
 #include "print.h"
-#define NUM 64
+#define NUM 1064
 int main(int argc, char ** argv)
 {
 	struct _SimplePool * shp = NULL;
@@ -13,7 +13,8 @@ int main(int argc, char ** argv)
 		printf("Create shp error\n");
 		return -1;
 	}
-	
+
+	unsigned long saveaddr = 0;
 	
 	int i = 0;
 	void  **pp = NULL;
@@ -35,6 +36,8 @@ int main(int argc, char ** argv)
 			printf("Get cell from pool error\n");
 			return -1;
 		}
+		if(i == 400)
+			saveaddr = (unsigned long)p;
 		memset(p, 0, 64);
 		pp[i] = p;
 	}
@@ -42,6 +45,12 @@ int main(int argc, char ** argv)
 	unsigned long end;
 	GetShpAddrScope(shp, &begin, &end);
 
+	if(IsAddrInShp(shp, saveaddr))
+	{
+		log_info("saveaddr is in shp\n");
+	}
+	else
+		log_info("save is not in shp\n");
 	log_info("begin = %lu end = %lu\n", begin, end);
 	for(i = 0; i < num; i++)
 	{
