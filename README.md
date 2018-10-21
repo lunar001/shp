@@ -26,7 +26,7 @@ The structure of this simple heap pool is bellow:
 
 usage:
     
-    	The simple heap pool supports for multi-thread.
+The simple heap pool supports for multi-thread.
     
 	Application need to create the pool before use and destory it after use
 	
