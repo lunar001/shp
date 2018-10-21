@@ -87,7 +87,8 @@ struct _SimplePoolSegment *  __AllocateSegment(struct _SimplePool * shp)
 	segp->segaviend_ = (char *)segp->segavibegin_ + SHPCELLNUM * shp->cellsize_;
 	/* segavicursor_ points the first cell in this segment initialily*/
 	segp->segavicursor_ = segp->segavibegin_;
-
+	log_debug("segp->segavibegin_ = %lu\n", segp->segavibegin_);
+	log_debug("segp->segaviend_ = %lu\n", segp->segaviend_);
 	rbtree_insert(&shp->rbroot_, segp);	
 
 	/* if the new allocated segment is the edge of the address scope */
@@ -112,7 +113,7 @@ struct _SimplePoolSegment *  __AllocateSegment(struct _SimplePool * shp)
 
 	log_debug("a segment allocated\n");
 #ifdef Debug
-	__rbtree_trav((shp->rbroot_).rb_node);
+	//__rbtree_trav((shp->rbroot_).rb_node);
 #endif
 	return segp;
 }
@@ -144,7 +145,7 @@ int __DeleteSegment(struct _SimplePool * shp, struct _SimplePoolSegment * segp)
 	free(segp);
 	log_debug("a segment freed\n");
 #ifdef Debug
-	__rbtree_trav((shp->rbroot_).rb_node);
+//	__rbtree_trav((shp->rbroot_).rb_node);
 #endif
 	return 0;
 }

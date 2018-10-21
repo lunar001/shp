@@ -13,9 +13,9 @@ void rbtree_insert(struct rb_root * rbroot, struct _SimplePoolSegment * segp )
 		p = (*tr);
 		tmp = rb_entry(*tr, struct _SimplePoolSegment, rbnode_);	
 		if(segp->key_ < tmp->key_)
-			tr = &(*tr)->rb_right;
-		else
 			tr = &(*tr)->rb_left;
+		else
+			tr = &(*tr)->rb_right;
 	}
 
 	rb_link_node(&segp->rbnode_, p, tr);
