@@ -5,10 +5,15 @@ Compare with some other memory pool, this memory pool can easily get the address
 determine whether a piece of memory is allocated from this pool. 
 
 The structure of this simple heap pool is bellow:
+
 	@1. shp is constructed by many segments, evey segment includes serval cells
+	
 	@2. all segments are orgnized by rbtree, ordered by the begining address of segment
+	
 	@3. if a segment has available cells, this segment will be inserted into the available list
+	
 	@4. when allocate a cell from the simple heap pool, get a available segment from available list and get one cell from this segment
+	
 	+--------------+
 	|   rbroot_  --|-->rbreee to organize all segments
 	+--------------+   +-----------+   +-----------+   +-----------+   +-----------+   +-----------+
@@ -17,7 +22,7 @@ The structure of this simple heap pool is bellow:
 	|   avitail_   |   | aviprev_  |<--|--aviprev_ |<--|   ...     |<--|--aviprev_ |
 	+--------------+   +-----------+   +-----------+   |           |   +-----------+
 	                   |    ...    |   |    ...    |   |           |   |    ...    |
-			  		   +-----------+   +-----------+   +-----------+   +-----------+
+			   +-----------+   +-----------+   +-----------+   +-----------+
 
 usage:
     The simple heap pool supports for multi-thread.
